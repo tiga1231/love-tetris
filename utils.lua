@@ -1,5 +1,17 @@
 utils = {}
 
+utils.colors = {}
+utils.colors.blue = {0x30,0x68,0xF7}
+utils.colors.red = {0xBA,0x44,0x37}
+utils.colors.white = {0xFF,0xFE,0xFF}
+utils.colors.black = {0x06,0x00,0x06}
+utils.colors.lightgrey = {0x86, 0xC3, 0xC2}
+utils.colors.darkgrey = {0x51, 0x4E, 0x4F}
+
+for k,c in pairs(utils.colors) do
+    utils.colors[k] = {c[1]/255, c[2]/255, c[3]/255}
+end
+
 function utils.emptyBoard(rows, cols)
     local board = {}
     for i=1,rows do
@@ -34,6 +46,14 @@ function utils.union(board, currentPiece, offset)
     return res
 end
 
+
+function utils.shuffle(tbl)
+  for i = #tbl, 2, -1 do
+    local j = math.random(i)
+    tbl[i], tbl[j] = tbl[j], tbl[i]
+  end
+  return tbl
+end
 
 function utils.add(s1, s2)
     if s1=='_' and s2=='_' then
@@ -138,6 +158,7 @@ function utils.isCollapse(board, currentPiece, offset)
     end
     return false
 end
+
 
 function utils.cancelLines(board, score)
     local ROWS = #board
