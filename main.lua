@@ -8,13 +8,13 @@ function love.load()
     ROWS = #board
     COLS = #board[1]
 
-    piecesQueue = {'i','o','j','l','t','s','z'}
-    piecesQueue = utils.shuffle(piecesQueue)
-
-    pieceIndex = 1
+    pieceNames = {"i", "o","j","l","t","s","z"}
+    pieceName = pieceNames[math.random(1, #pieceNames)]
     pieceState = 1
-    currentPiece = blocks[piecesQueue[pieceIndex]][pieceState]
-    nextPiece = blocks[piecesQueue[pieceIndex+1]][1]
+    currentPiece = blocks[pieceName][pieceState]
+    
+    nextPieceName = pieceNames[math.random(1, #pieceNames)]
+    nextPiece = blocks[nextPieceName][1]
     
     initOffset = {x=3, y=-3}
     offset = {x=initOffset.x, y=initOffset.y}
@@ -52,12 +52,13 @@ function love.update(dt)
             tempBoard = utils.union(board, currentPiece, offset)
             board = tempBoard
 
-            pieceIndex = utils.increase(pieceIndex, #piecesQueue)
-            pieceState = math.random(1, #blocks[piecesQueue[pieceIndex]])
-            currentPiece = blocks[piecesQueue[pieceIndex]][pieceState]
+            pieceName =  nextPieceName
+            pieceState = math.random(1, #blocks[pieceName])
+            currentPiece = blocks[pieceName][pieceState]
 
-            piecesQueue = utils.shuffle(piecesQueue)
-            nextPiece = blocks[piecesQueue[utils.increase(pieceIndex, #piecesQueue)]][1]
+            nextPieceName = pieceNames[math.random(1, #pieceNames)]
+            nextPiece = blocks[nextPieceName][1]
+
             offset = {x=initOffset.x, y=initOffset.y}
             board, score = utils.cancelLines(board, score)
         else
@@ -70,8 +71,7 @@ function love.update(dt)
 
         timer = timer % T
     else
-        print(pieceIndex, pieceState)
-        currentPiece = blocks[piecesQueue[pieceIndex]][pieceState]
+        currentPiece = blocks[pieceName][pieceState]
         tempBoard = utils.union(board, currentPiece, offset)
     end
 
@@ -240,9 +240,8 @@ end
 
 
 function pieceRotate()
-    local statesCount = #blocks[piecesQueue[pieceIndex]]
-    local nextState = utils.increase(pieceState, statesCount)
-    local rotatePiece = blocks[piecesQueue[pieceIndex]][nextState]
+    local nextState = utils.increase(pieceState, #blocks[pieceName])
+    local rotatePiece = blocks[pieceName][nextState]
 
     if not utils.isCollapse(board, rotatePiece, offset) then
         pieceState = nextState
