@@ -7,10 +7,22 @@ utils.colors.white = {0xFF,0xFE,0xFF}
 utils.colors.black = {0x06,0x00,0x06}
 utils.colors.lightgrey = {0x86, 0xC3, 0xC2}
 utils.colors.darkgrey = {0x51, 0x4E, 0x4F}
-
 for k,c in pairs(utils.colors) do
     utils.colors[k] = {c[1]/255, c[2]/255, c[3]/255}
 end
+
+utils.colorscheme = {
+    {
+        o=utils.colors.white,
+        j=utils.colors.blue,
+        s=utils.colors.blue,
+        i=utils.colors.white,
+        l=utils.colors.red,
+        t=utils.colors.white,
+        z=utils.colors.red,
+        _={0,0,0,0},
+    },
+}
 
 function utils.emptyBoard(rows, cols)
     local board = {}

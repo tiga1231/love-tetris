@@ -3,6 +3,8 @@ require('utils')
 
 
 function love.load()
+    math.randomseed(os.time())
+
     board = utils.emptyBoard(20,10)
     tempBoard = board
     ROWS = #board
@@ -19,7 +21,8 @@ function love.load()
     initOffset = {x=3, y=-3}
     offset = {x=initOffset.x, y=initOffset.y}
     
-    timer = 0
+    keyDownTimer = 0
+    pieceDownTimer = 0
     score = 0
 
     love.graphics.setNewFont(50)
@@ -31,22 +34,29 @@ function love.load()
     margin = width * 0.15
     blockSize = (width - 2*margin) / COLS
    
-    colors = {
-        i=utils.colors.white,
-        o=utils.colors.red,
-        j=utils.colors.blue,
-        l=utils.colors.white,
-        t=utils.colors.red,
-        s=utils.colors.blue,
-        z=utils.colors.white,
-        _={0,0,0,0},
-    }
+    level = 1
+    colors = utils.colorscheme[level]
+    print(colors['s'][1])
 end
 
-function love.update(dt)
+
+function handleKeyDown(dt)
+    local T = 0.02
+    if love.keyboard.isDown(keys.down) then
+        if keyDownTimer > T  then
+            pieceDown()
+            keyDownTimer = 0
+        else
+            keyDownTimer = keyDownTimer + dt
+        end
+    end
+end
+
+
+function handlePieceDown(dt)
     local T = 0.4
-    timer = timer + dt
-    if timer>T then
+    pieceDownTimer = pieceDownTimer + dt
+    if pieceDownTimer>T then
         if utils.isCollapse(board, currentPiece, {x=offset.x, y=offset.y+1}) then
 
             tempBoard = utils.union(board, currentPiece, offset)
@@ -69,13 +79,17 @@ function love.update(dt)
             reset()
         end
 
-        timer = timer % T
+        pieceDownTimer = pieceDownTimer % T
     else
         currentPiece = blocks[pieceName][pieceState]
         tempBoard = utils.union(board, currentPiece, offset)
     end
+end
 
 
+function love.update(dt)
+    handleKeyDown(dt)
+    handlePieceDown(dt)
 end
 
 
@@ -153,7 +167,7 @@ function drawBlock(i, j, color)
 
 
     love.graphics.setColor(color)
-    blockMargin = 4
+    blockMargin = 6
     love.graphics.rectangle('fill', 
         x+blockMargin/2, y+blockMargin/2, 
         blockSize-blockMargin, blockSize-blockMargin)
@@ -164,20 +178,24 @@ function drawBlock(i, j, color)
 
     if color == utils.colors.white then
         love.graphics.setColor(utils.colors.blue)
-        love.graphics.setLineWidth(4)
+        love.graphics.setLineWidth(blockMargin)
         love.graphics.rectangle('line', 
             x+blockMargin, y+blockMargin, 
             blockSize-blockMargin*2, blockSize-blockMargin*2)
     end
 
+    local hlWidth=6
+    local hlHeight=8
+    local hlSide=6
+
     if color[4] ~= 0 then
         --highlight
         love.graphics.setColor(utils.colors.white)
         love.graphics.setLineWidth(0)
-        love.graphics.rectangle('fill', x+blockMargin/2, y+blockMargin/2, 4,5)
-        love.graphics.rectangle('fill', x+blockMargin/2+4, y+blockMargin+5, 6,6)
-        love.graphics.rectangle('fill', x+blockMargin/2+4, y+blockMargin+5+6, 6,6)
-        love.graphics.rectangle('fill', x+blockMargin/2+4+6, y+blockMargin+5, 6,6)
+        love.graphics.rectangle('fill', x+blockMargin/2, y+blockMargin/2, hlWidth, hlHeight)
+        love.graphics.rectangle('fill', x+blockMargin/2+hlWidth, y+blockMargin+hlHeight-4, hlSide, hlSide)
+        love.graphics.rectangle('fill', x+blockMargin/2+hlWidth, y+blockMargin+hlHeight+hlSide-4, hlSide,hlSide)
+        love.graphics.rectangle('fill', x+blockMargin/2+hlWidth+hlSide, y+blockMargin+hlHeight-4, hlSide,hlSide)
     end
 end
 
@@ -207,7 +225,8 @@ keys = {
     up='up',
     down='down',
     left='left',
-    right='right'
+    right='right',
+    bottom='rshift',
 }
 
 
@@ -215,12 +234,12 @@ function love.keypressed(key)
     print(key)
     if key == keys.up then
         pieceRotate()
-    elseif key == keys.down then
-        pieceDown()
     elseif key==keys.left then
         pieceLeft()
     elseif key==keys.right then
         pieceRight()
+    elseif key == keys.bottom then
+        pieceBottom()
     end
 end
 
@@ -245,11 +264,25 @@ function pieceRotate()
 
     if not utils.isCollapse(board, rotatePiece, offset) then
         pieceState = nextState
+    else
+        if not utils.isCollapse(board, rotatePiece, {x=offset.x+1, y=offset.y}) then
+            offset.x = offset.x+1
+            pieceState = nextState
+        elseif not utils.isCollapse(board, rotatePiece, {x=offset.x-1, y=offset.y}) then
+            offset.x = offset.x-1
+            pieceState = nextState
+        end
     end
 end
 
 
 function pieceDown()
+    if not utils.isCollapse(board, currentPiece, {x=offset.x, y=offset.y+1}) then
+        offset.y = offset.y+1
+    end
+end
+
+function pieceBottom()
     while not utils.isCollapse(board, currentPiece, {x=offset.x, y=offset.y+1}) do
         offset.y = offset.y+1
     end
