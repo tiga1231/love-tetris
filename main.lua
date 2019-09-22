@@ -4,6 +4,12 @@ require('utils')
 
 function love.load()
     math.randomseed(os.time())
+    
+    height = love.graphics.getHeight()
+    width = height / 2.2
+
+    success = love.window.setMode(width, height)
+
 
     board = utils.emptyBoard(20,10)
     tempBoard = board
@@ -25,12 +31,10 @@ function love.load()
     pieceDownTimer = 0
     score = 0
 
-    love.graphics.setNewFont(50)
+    love.graphics.setNewFont(20)
     bgColor = utils.colors.black
     love.graphics.setBackgroundColor(bgColor)
 
-    width = love.graphics.getWidth()
-    height = love.graphics.getHeight()
     margin = width * 0.15
     blockSize = (width - 2*margin) / COLS
    
@@ -140,21 +144,20 @@ end
 
 
 function drawFrame(x,y,width,height)
-    local m = 4
-    love.graphics.setColor(utils.colors.black)
+
+    local m = blockSize/10 -- frame line width
     love.graphics.setLineWidth(m)
+
+    love.graphics.setColor(utils.colors.black)
     love.graphics.rectangle('line', x, y, width, height)
 
     love.graphics.setColor(utils.colors.lightgrey)
-    love.graphics.setLineWidth(m)
     love.graphics.rectangle('line', x-m, y-m, width+2*m, height+2*m)
 
     love.graphics.setColor(utils.colors.black)
-    love.graphics.setLineWidth(m)
     love.graphics.rectangle('line', x-2*m, y-2*m, width+4*m, height+4*m)
 
     love.graphics.setColor(utils.colors.darkgrey)
-    love.graphics.setLineWidth(m)
     love.graphics.rectangle('line', x-3*m, y-3*m, width+6*m, height+6*m, m, m)
 
 end
@@ -167,7 +170,7 @@ function drawBlock(i, j, color)
 
 
     love.graphics.setColor(color)
-    blockMargin = 6
+    blockMargin = blockSize/10
     love.graphics.rectangle('fill', 
         x+blockMargin/2, y+blockMargin/2, 
         blockSize-blockMargin, blockSize-blockMargin)
@@ -184,25 +187,26 @@ function drawBlock(i, j, color)
             blockSize-blockMargin*2, blockSize-blockMargin*2)
     end
 
-    local hlWidth=6
-    local hlHeight=8
-    local hlSide=6
+    -- highlight
+    local hlWidth=blockMargin
+    local hlHeight=blockMargin
+    local hlSide=blockMargin
 
     if color[4] ~= 0 then
         --highlight
         love.graphics.setColor(utils.colors.white)
         love.graphics.setLineWidth(0)
         love.graphics.rectangle('fill', x+blockMargin/2, y+blockMargin/2, hlWidth, hlHeight)
-        love.graphics.rectangle('fill', x+blockMargin/2+hlWidth, y+blockMargin+hlHeight-4, hlSide, hlSide)
-        love.graphics.rectangle('fill', x+blockMargin/2+hlWidth, y+blockMargin+hlHeight+hlSide-4, hlSide,hlSide)
-        love.graphics.rectangle('fill', x+blockMargin/2+hlWidth+hlSide, y+blockMargin+hlHeight-4, hlSide,hlSide)
+        love.graphics.rectangle('fill', x+blockMargin/2+hlWidth, y+blockMargin+hlHeight, hlSide, hlSide)
+        love.graphics.rectangle('fill', x+blockMargin/2+hlWidth, y+blockMargin+hlHeight+hlSide, hlSide,hlSide)
+        love.graphics.rectangle('fill', x+blockMargin/2+hlWidth+hlSide, y+blockMargin+hlHeight, hlSide,hlSide)
     end
 end
 
 
 function drawNext(nextPiece)
 
-    local x = margin + 3*blockSize
+    local x = margin + 3*blockSize - blockSize/2
     local y = height - margin - ROWS*blockSize - 5*blockSize
     drawFrame(x,y, blockSize*5, blockSize*4)
 
@@ -214,20 +218,7 @@ function drawNext(nextPiece)
 end
 
 
--- keys = {
---     up='i',
---     down='k',
---     left='j',
---     right='l'
--- }
 
-keys = {
-    up='up',
-    down='down',
-    left='left',
-    right='right',
-    bottom='rshift',
-}
 
 
 function love.keypressed(key)
